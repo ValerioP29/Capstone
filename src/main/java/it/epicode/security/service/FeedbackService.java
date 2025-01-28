@@ -35,4 +35,11 @@ public class FeedbackService {
         return feedbackRepository.findByClientId(clientId);
      }
 
+     public List<Feedback> getFeedbackByHotel (Long hotelId) {
+        if (!userRepository.existsById(hotelId)) {
+            throw  new ResourceNotFoundException("Client with ID " + hotelId + "not found");
+        }
+        return feedbackRepository.findByClientId(hotelId);
+     }
+
 }

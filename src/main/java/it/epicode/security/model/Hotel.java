@@ -1,6 +1,7 @@
 package it.epicode.security.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,11 +21,17 @@ public class Hotel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank
+    @Column(nullable = false)
     private String name;
+
+    @NotBlank(message = "Location is required")
     private String location;
 
     @ManyToOne
+    @JoinColumn(nullable = false, name = "owner_id", referencedColumnName = "id")
     private User owner; // Proprietario dell'hotel (collegato a User con ROLE_HOTEL)
 
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 }
