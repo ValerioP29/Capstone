@@ -59,6 +59,7 @@ public class JwtTokenUtil {
         List<String> roles = authorities.stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
+        System.out.println(roles);
 
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())

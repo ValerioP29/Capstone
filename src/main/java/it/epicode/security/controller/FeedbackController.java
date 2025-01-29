@@ -1,5 +1,6 @@
 package it.epicode.security.controller;
 
+import it.epicode.security.dto.FeedbackDTO;
 import it.epicode.security.model.Feedback;
 import it.epicode.security.service.FeedbackService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +21,9 @@ public class FeedbackController {
     @PreAuthorize("hasRole('ROLE_HOTEL')")
     @PostMapping
     public ResponseEntity<Feedback> createFeedback(
-            @RequestParam Long hotelId,
-            @RequestParam Long clientId,
-            @RequestBody Feedback feedback
+            @RequestBody FeedbackDTO feedbackDTO
     ){
-        Feedback createdFeedback = feedbackService.createFeedback(hotelId, clientId, feedback);
+        Feedback createdFeedback = feedbackService.createFeedback(feedbackDTO);
         return ResponseEntity.ok((createdFeedback));
     }
     // recupero feedback

@@ -11,7 +11,5 @@ public class RegisterRequestDTO {
     private String email;
     private Set<String> roles;
 
-    public Set<String> getRoles() {
-        return roles;
-    }
+
 }
