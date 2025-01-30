@@ -59,16 +59,23 @@ public class JwtTokenUtil {
         List<String> roles = authorities.stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
-        System.out.println(roles);
+
+        // stiamo usando CustomUserDetails per ottenere l'ID
+        Long userId = null;
+        if (userDetails instanceof CustomUserDetails) {
+            userId = ((CustomUserDetails) userDetails).getId();
+        }
 
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())
-                .claim("roles", roles) // Aggiunge i ruoli come claim
+                .claim("id", userId)  // ✅ Aggiunto ID nel token
+                .claim("roles", roles) // ✅ Manteniamo anche i ruoli
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationInMs))
                 .signWith(SignatureAlgorithm.HS256, secret)
                 .compact();
     }
+
 
     // Estrae i ruoli dal token JWT
     public List<String> getRolesFromToken(String token) {

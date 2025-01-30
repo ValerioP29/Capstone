@@ -1,5 +1,6 @@
 package it.epicode.security.service;
 
+import it.epicode.security.dto.HotelDTO;
 import it.epicode.security.exceptions.ResourceNotFoundException;
 import it.epicode.security.model.Hotel;
 import it.epicode.security.model.User;
@@ -9,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class HotelService {
@@ -19,19 +22,40 @@ public class HotelService {
     @Autowired
     private UserRepository userRepository;
 
-    // Creazione hotel
+    public Hotel findById(Long id) {
+        return hotelRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Hotel with ID " + id + " not found"));
+    }
 
-    public Hotel createHotel(Long ownerId, Hotel hotel) {
-        User owner = userRepository.findById(ownerId)
-                .orElseThrow(()-> new ResourceNotFoundException("Owner with ID " + ownerId + " not found"));
+    public List<Hotel> findAll() {
+        return hotelRepository.findAll();
+    }
+
+    public Hotel createHotel(HotelDTO hotelDTO) {
+        User owner = userRepository.findById(hotelDTO.getOwnerId())
+                .orElseThrow(() -> new ResourceNotFoundException("Owner with ID " + hotelDTO.getOwnerId() + " not found"));
+
+        Hotel hotel = new Hotel();
+        hotel.setName(hotelDTO.getName());
+        hotel.setLocation(hotelDTO.getLocation());
         hotel.setOwner(owner);
+
         return hotelRepository.save(hotel);
     }
-    //Lista hotel di un proprietario
-   public List<Hotel> getHotelsByOwner(Long ownerId){
-        if (!userRepository.existsById(ownerId)){
-            throw new ResourceNotFoundException("Owner with ID " + ownerId + " not found");
-        }
-        return hotelRepository.findByOwner_Id(ownerId);
-   }
+
+    public Hotel updateHotel(Long id, HotelDTO hotelDTO) {
+        Hotel hotel = findById(id);
+
+        hotel.setName(hotelDTO.getName());
+        hotel.setLocation(hotelDTO.getLocation());
+
+        return hotelRepository.save(hotel);
+    }
+
+    public void deleteHotel(Long id) {
+        Hotel hotel = findById(id);
+        hotelRepository.delete(hotel);
+    }
+
+
 }

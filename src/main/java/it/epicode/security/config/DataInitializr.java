@@ -2,8 +2,10 @@ package it.epicode.security.config;
 
 import it.epicode.security.auth.Role;
 import it.epicode.security.model.Hotel;
+import it.epicode.security.model.Score;
 import it.epicode.security.model.User;
 import it.epicode.security.repository.HotelRepository;
+import it.epicode.security.repository.ScoreRepository;
 import it.epicode.security.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -26,6 +28,9 @@ public class DataInitializr implements CommandLineRunner {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private ScoreRepository scoreRepository;
+
     @Override
     public void run(String... args) throws Exception {
         // Creazione utenti
@@ -43,6 +48,12 @@ public class DataInitializr implements CommandLineRunner {
                 user.setPassword(password);
                 user.setRoles(roles);
                 userRepository.save(user);
+
+                Score score = new Score();
+                score.setClient(user);
+                score.setTotalScore(0);  // Il punteggio iniziale è 0
+                score.setTier("BRONZE"); // Tutti partono come BRONZE
+                scoreRepository.save(score);
             }
         }
 

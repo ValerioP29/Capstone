@@ -1,13 +1,8 @@
 package it.epicode.security.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-import java.time.LocalDateTime;
+import lombok.*;
 
 @Entity
 @Getter
@@ -21,16 +16,11 @@ public class Score {
     private Long id;
 
     @OneToOne
-    @JoinColumn(nullable = false, unique = true, name = "client_id", referencedColumnName = "id")
-    private User client; // Cliente a cui appartiene il punteggio
+    @JoinColumn(name = "client_id", nullable = false)
+    @JsonBackReference
 
-    @Column(nullable = false)
-    private int totalScore;// Punteggio totale calcolato dai feedback
+    private User client;
+    private int totalScore;
+    private String tier;
 
-    @Column(nullable = false)
-    @NotBlank(message = "Tier is required")
-    private String tier; // Livello (es. BRONZE, SILVER, GOLD, PLATINUM)
-
-    @Column(nullable = false)
-    private LocalDateTime updatedAt = LocalDateTime.now();
 }
