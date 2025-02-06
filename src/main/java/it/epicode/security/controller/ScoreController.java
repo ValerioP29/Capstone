@@ -17,31 +17,31 @@ public class ScoreController {
     @Autowired
     private ScoreService scoreService;
 
+    @PreAuthorize("hasRole('ROLE_CLIENT') and #clientId == authentication.principal.id")
     @GetMapping("/{clientId}")
-    @PreAuthorize("#clientId == authentication.principal.id")
     public ResponseEntity<Score> getScoreByClientId(@PathVariable Long clientId) {
         Score score = scoreService.findByClientId(clientId);
         return ResponseEntity.ok(score);
     }
 
+    @PreAuthorize("hasRole('ROLE_HOTEL')")
     @GetMapping
     public ResponseEntity<List<Score>> getAllScores() {
         List<Score> scores = scoreService.findAllScores();
         return ResponseEntity.ok(scores);
     }
 
+    @PreAuthorize("hasRole('ROLE_HOTEL')")
     @PutMapping("/{clientId}")
-    @PreAuthorize("hasRole('ROLE_HOTEL')") // Solo gli hotel possono aggiornare il punteggio
     public ResponseEntity<Score> updateClientScore(@PathVariable Long clientId) {
         Score updatedScore = scoreService.updateScoreForClient(clientId);
         return ResponseEntity.ok(updatedScore);
-
     }
+
+    @PreAuthorize("hasRole('ROLE_HOTEL')")
     @DeleteMapping("/{clientId}")
-    @PreAuthorize("hasRole('ROLE_HOTEL') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteScore(@PathVariable Long clientId) {
         scoreService.deleteScore(clientId);
         return ResponseEntity.noContent().build();
     }
-
 }

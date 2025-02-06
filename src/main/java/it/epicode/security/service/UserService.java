@@ -3,78 +3,80 @@ package it.epicode.security.service;
 import it.epicode.security.auth.Role;
 import it.epicode.security.dto.RegisterRequestDTO;
 import it.epicode.security.dto.UserDTO;
-import it.epicode.security.exceptions.ResourceNotFoundException;
-import it.epicode.security.model.Score;
 import it.epicode.security.model.User;
 import it.epicode.security.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    public User registerUser(RegisterRequestDTO registerDTO) {
-        Optional<User> existingUser = userRepository.findByUsername(registerDTO.getUsername());
-        if (existingUser.isPresent()) {
+    // ✅ REGISTRAZIONE UTENTE
+    public void registerUser(RegisterRequestDTO registerRequestDTO) {
+        if (userRepository.existsByUsername(registerRequestDTO.getUsername())) {
             throw new RuntimeException("Username already exists");
         }
 
+        if (userRepository.existsByEmail(registerRequestDTO.getEmail())) {
+            throw new RuntimeException("Email already exists");
+        }
+
         User user = new User();
-        user.setUsername(registerDTO.getUsername());
-        user.setEmail(registerDTO.getEmail());
-        user.setPassword(passwordEncoder.encode(registerDTO.getPassword()));
+        user.setUsername(registerRequestDTO.getUsername());
+        user.setEmail(registerRequestDTO.getEmail());
+        user.setPassword(passwordEncoder.encode(registerRequestDTO.getPassword()));
 
-        // Mappare i ruoli
-        Set<Role> roles = registerDTO.getRoles().stream()
-                .map(role -> Role.valueOf(role.toUpperCase()))
+        // ✅ Conversione String -> Enum Role
+        Set<Role> userRoles = registerRequestDTO.getRoles().stream()
+                .map(roleName -> {
+                    try {
+                        return Role.valueOf(roleName); // Converte la stringa in enum
+                    } catch (IllegalArgumentException e) {
+                        throw new RuntimeException("Invalid role: " + roleName);
+                    }
+                })
                 .collect(Collectors.toSet());
-        user.setRoles(roles);
 
-        // Creazione punteggio iniziale per il nuovo utente
-        Score score = new Score();
-        score.setTotalScore(0);
-        score.setTier("BRONZE");
-        score.setClient(user);
-        user.setScore(score);
-
-        return userRepository.save(user);
+        user.setRoles(userRoles);
+        userRepository.save(user);
     }
 
-
-    public User findById(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User with ID " + userId + " not found"));
+    // ✅ TROVA UTENTE PER ID
+    public User findById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
+    // ✅ TROVA TUTTI GLI UTENTI
     public List<User> findAll() {
         return userRepository.findAll();
     }
 
+    // ✅ TROVA GLI UTENTI CON IL PUNTEGGIO PIÙ ALTO
     public List<User> findTopUsers() {
-        return userRepository.findAll().stream()
-                .sorted((u1, u2) -> Integer.compare(u2.getScore().getTotalScore(), u1.getScore().getTotalScore()))
-                .limit(10)
-                .collect(Collectors.toList());
+        return userRepository.findTopUsers();
     }
 
+    // ✅ AGGIORNA UTENTE (solo se è lo stesso utente autenticato)
     public User updateUser(Long id, UserDTO userDTO) {
-        User user = findById(id);
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        user.setUsername(userDTO.getUsername());
-        user.setEmail(userDTO.getEmail());
+        existingUser.setUsername(userDTO.getUsername());
+        existingUser.setEmail(userDTO.getEmail());
 
-        return userRepository.save(user);
+        userRepository.save(existingUser);
+        return existingUser;
     }
 }

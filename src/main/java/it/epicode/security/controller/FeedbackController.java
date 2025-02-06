@@ -21,7 +21,6 @@ public class FeedbackController {
     @Autowired
     ScoreService scoreService;
 
-    // creazione feedback(solo hotel)
     @PreAuthorize("hasRole('ROLE_HOTEL')")
     @PostMapping
     public ResponseEntity<Feedback> createFeedback(@RequestBody FeedbackDTO feedbackDTO) {
@@ -33,18 +32,16 @@ public class FeedbackController {
         return ResponseEntity.ok(createdFeedback);
     }
 
-    // recupero feedback
-    @PreAuthorize("hasRole('ROLE_CLIENT') or hasRole('ROLE_HOTEL')")
+    @PreAuthorize("hasRole('ROLE_CLIENT') and #clientId == authentication.principal.id")
     @GetMapping("/client/{clientId}")
     public ResponseEntity<List<Feedback>> getFeedbackByClient(@PathVariable Long clientId) {
         List<Feedback> feedbacks = feedbackService.getFeedbackByClient(clientId);
         return ResponseEntity.ok(feedbacks);
     }
-    // recupero feedback di un hotel
+
     @PreAuthorize("hasRole('ROLE_HOTEL')")
     @GetMapping("/hotel/{hotelId}")
-
-    public ResponseEntity<List<Feedback>> getFeedbackByHotel (@PathVariable Long hotelId) {
+    public ResponseEntity<List<Feedback>> getFeedbackByHotel(@PathVariable Long hotelId) {
         List<Feedback> feedbacks = feedbackService.getFeedbackByHotel(hotelId);
         return ResponseEntity.ok(feedbacks);
     }

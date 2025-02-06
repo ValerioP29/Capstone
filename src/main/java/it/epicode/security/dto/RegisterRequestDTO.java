@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Data
@@ -21,5 +22,5 @@ public class RegisterRequestDTO {
     private String password;
 
     @NotNull(message = "Roles are required")
-    private Set<String> roles; // Lista di ruoli come stringhe
+    private Set<String> roles = new HashSet<>();
 }

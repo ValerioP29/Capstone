@@ -1,13 +1,17 @@
 package it.epicode.security.auth;
+
 import it.epicode.security.dto.RegisterRequestDTO;
 import it.epicode.security.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -20,27 +24,36 @@ public class AuthController {
 
     // 🔹 REGISTRAZIONE
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterRequestDTO registerRequestDTO) {
-        userService.registerUser(registerRequestDTO);
-        return ResponseEntity.ok("Registrazione avvenuta con successo");
+    public ResponseEntity<Map<String, String>> register(@RequestBody RegisterRequestDTO registerRequestDTO) {
+        try {
+            userService.registerUser(registerRequestDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message","Registrazione avvenuta con successo"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error","Errore durante la registrazione: " + e.getMessage()));
+        }
     }
 
     // 🔹 LOGIN
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginRequest.getUsername(),
-                        loginRequest.getPassword()
-                )
-        );
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getUsername(),
+                            loginRequest.getPassword()
+                    )
+            );
 
-        // Ottenere UserDetails
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            // Ottenere UserDetails
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
-        // Generare Token JWT
-        String token = jwtTokenUtil.generateToken(userDetails);
+            // Generare Token JWT
+            String token = jwtTokenUtil.generateToken(userDetails);
 
-        return ResponseEntity.ok(new AuthResponse(token));
+            return ResponseEntity.ok(new AuthResponse(token));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthResponse("Invalid credentials"));
+        }
     }
 }
