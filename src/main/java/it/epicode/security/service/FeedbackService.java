@@ -54,11 +54,25 @@ public class FeedbackService {
         return feedbackRepository.findByClientId(clientId);
      }
 
-     public List<Feedback> getFeedbackByHotel (Long hotelId) {
-        if (!userRepository.existsById(hotelId)) {
-            throw  new ResourceNotFoundException("Client with ID " + hotelId + "not found");
+    public List<Feedback> getFeedbackByHotelOwner(Long ownerId) {
+        // Controlla se l'utente esiste ed è un hotel
+        if (!userRepository.existsById(ownerId)) {
+            throw new ResourceNotFoundException("User with ID " + ownerId + " not found");
         }
-        return feedbackRepository.findByClientId(hotelId);
-     }
+
+        // Ottieni tutti gli hotel posseduti dall'utente
+        List<Hotel> ownedHotels = hotelRepository.findByOwnerId(ownerId);
+
+        if (ownedHotels.isEmpty()) {
+            return List.of(); // Se non ha hotel, ritorna lista vuota
+        }
+
+        // Estrai gli ID degli hotel
+        List<Long> hotelIds = ownedHotels.stream().map(Hotel::getId).toList();
+
+        // Cerca tutti i feedback relativi a questi hotel
+        return feedbackRepository.findByHotelIdIn(hotelIds);
+    }
+
 
 }

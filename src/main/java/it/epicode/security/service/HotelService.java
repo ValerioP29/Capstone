@@ -57,5 +57,8 @@ public class HotelService {
         hotelRepository.delete(hotel);
     }
 
+    public List<Hotel> findHotelsByOwner(Long ownerId) {
+        return hotelRepository.findByOwnerId(ownerId);
+    }
 
 }

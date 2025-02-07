@@ -27,7 +27,7 @@ public class UserController {
     }
 
     // ✅ Recupera tutti gli utenti (solo per gli hotel)
-    @PreAuthorize("hasRole('ROLE_HOTEL')")
+    @PreAuthorize("hasRole('ROLE_CLIENT') or hasRole('ROLE_HOTEL')")
     @GetMapping
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         List<UserDTO> users = userService.findAll()
@@ -38,7 +38,7 @@ public class UserController {
     }
 
     // ✅ Recupera gli utenti con punteggio più alto (solo per gli hotel)
-    @PreAuthorize("hasRole('ROLE_HOTEL')")
+    @PreAuthorize("hasRole('ROLE_CLIENT') or hasRole('ROLE_HOTEL')")
     @GetMapping("/top")
     public ResponseEntity<List<UserDTO>> getTopUsers() {
         List<UserDTO> topUsers = userService.findTopUsers()
