@@ -6,24 +6,23 @@ import it.epicode.security.model.Hotel;
 import it.epicode.security.model.User;
 import it.epicode.security.repository.UserRepository;
 import it.epicode.security.service.HotelService;
-import it.epicode.security.service.UserService;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/hotels")
 public class HotelController {
 
     @Autowired
-    HotelService hotelService;
+    private HotelService hotelService;
 
     @Autowired
     private UserRepository userRepository;
@@ -31,13 +30,45 @@ public class HotelController {
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
 
-
     @PreAuthorize("hasRole('ROLE_HOTEL')")
-    @PostMapping
-    public ResponseEntity<Hotel> createHotel(@Valid @RequestBody HotelDTO hotelDTO) {
-        Hotel hotel = hotelService.createHotel(hotelDTO);
-        return ResponseEntity.ok(hotel);
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Hotel> createHotel(
+            @RequestPart("name") String name,
+            @RequestPart("location") String location,
+            @RequestPart("ownerId") Long ownerId, // ✅ Aggiunto il proprietario
+            @RequestPart(value = "image", required = false) MultipartFile image) {
+
+        // Log per verificare i dati ricevuti
+        System.out.println("📥 Ricevuta richiesta per creare un hotel");
+        System.out.println("Nome: " + name);
+        System.out.println("Posizione: " + location);
+        System.out.println("Proprietario ID: " + ownerId);
+
+        if (image != null) {
+            System.out.println("📸 Immagine ricevuta: " + image.getOriginalFilename());
+            System.out.println("Tipo di contenuto immagine: " + image.getContentType());
+            System.out.println("Dimensione immagine: " + image.getSize() + " byte");
+        } else {
+            System.out.println("❌ Nessuna immagine caricata.");
+        }
+
+        HotelDTO hotelDTO = new HotelDTO();
+        hotelDTO.setName(name);
+        hotelDTO.setLocation(location);
+        hotelDTO.setOwnerId(ownerId);
+
+        try {
+            // ✅ Passa l'immagine al service
+            Hotel hotel = hotelService.createHotel(hotelDTO, image);
+            System.out.println("✅ Hotel creato con successo: " + hotel.getName());
+            return ResponseEntity.ok(hotel);
+        } catch (Exception e) {
+            System.err.println("❌ Errore durante la creazione dell'hotel: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
+
 
     @PreAuthorize("hasRole('ROLE_CLIENT') or hasRole('ROLE_HOTEL')")
     @GetMapping("/{id}")
@@ -53,7 +84,7 @@ public class HotelController {
 
     @PreAuthorize("hasRole('ROLE_HOTEL')")
     @PutMapping("/{id}")
-    public ResponseEntity<Hotel> updateHotel(@PathVariable Long id, @Valid @RequestBody HotelDTO hotelDTO) {
+    public ResponseEntity<Hotel> updateHotel(@PathVariable Long id, @RequestBody HotelDTO hotelDTO) {
         return ResponseEntity.ok(hotelService.updateHotel(id, hotelDTO));
     }
 
@@ -67,15 +98,29 @@ public class HotelController {
     @PreAuthorize("hasRole('ROLE_HOTEL')")
     @GetMapping("/my-hotel")
     public ResponseEntity<List<Hotel>> getMyHotels(@RequestHeader("Authorization") String token) {
-        String username = jwtTokenUtil.getUsernameFromToken(token.replace("Bearer" , "")); // Estrai il nome utente dal token
-        Optional<User> ownerOpt = userRepository.findByUsername(username);
-        if (ownerOpt.isEmpty()) {
+        // ✅ Rimuove "Bearer " dalla stringa del token
+        token = token.replace("Bearer ", "").trim();
+
+        String username = jwtTokenUtil.getUsernameFromToken(token);
+        if (username == null || username.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.emptyList());
+        }
+
+        User owner = userRepository.findByUsername(username).orElse(null);
+        if (owner == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyList());
         }
-        User owner = ownerOpt.get();
-
 
         List<Hotel> hotels = hotelService.findHotelsByOwner(owner.getId());
+
+        hotels.forEach(hotel -> {
+            if (hotel.getImageUrl() != null && !hotel.getImageUrl().isEmpty()) {
+                hotel.setImageUrl("http://localhost:8080/uploads/" + hotel.getImageUrl());
+            } else {
+                hotel.setImageUrl("http://localhost:8080/uploads/default-hotel.jpg");
+            }
+        });
+
         return ResponseEntity.ok(hotels);
     }
 

@@ -3,6 +3,7 @@ package it.epicode.security.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @Data
@@ -16,6 +17,9 @@ import lombok.Data;
 
         @NotNull(message = "Owner ID is required")
         private Long ownerId;
+
+
+        private String imageUrl;
     }
 
 

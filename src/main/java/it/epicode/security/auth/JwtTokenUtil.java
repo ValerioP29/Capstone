@@ -25,8 +25,14 @@ public class JwtTokenUtil {
 
     // Estrae il nome utente dal token JWT
     public String getUsernameFromToken(String token) {
-        return getClaimFromToken(token, Claims::getSubject);
+        try {
+            return getClaimFromToken(token, Claims::getSubject);
+        } catch (Exception e) {
+            System.err.println("⚠️ Errore nel parsing del token JWT: " + e.getMessage());
+            return null; // Evita di lanciare un'eccezione non gestita
+        }
     }
+
 
     // Estrae la data di scadenza dal token JWT
     public Date getExpirationDateFromToken(String token) {

@@ -28,6 +28,9 @@ public class Hotel {
     @NotBlank(message = "Location is required")
     private String location;
 
+
+    private String imageUrl;
+
     @ManyToOne
     @JoinColumn(nullable = false, name = "owner_id", referencedColumnName = "id")
     private User owner; // Proprietario dell'hotel (collegato a User con ROLE_HOTEL)
