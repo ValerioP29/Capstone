@@ -12,6 +12,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.cors.CorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableMethodSecurity(prePostEnabled = true)
@@ -25,13 +30,13 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
         http
-                .csrf(csrf -> csrf.disable()) // Disabilita CSRF per le API REST
+                .csrf(csrf ->csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // ✅ Configura CORS
                 .authorizeHttpRequests(authorize -> authorize
-                        // Rotte pubbliche
+                        // ✅ Rotte pubbliche
                         .requestMatchers(
-                                "/api/auth/**",    // Autenticazione e registrazione
+                                "/api/auth/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui.html",
@@ -39,26 +44,38 @@ public class SecurityConfig {
                                 "/webjars/**"
                         ).permitAll()
 
-                        // Protezione rotte per CLIENT
+                        // ✅ Protezione rotte per CLIENT
                         .requestMatchers("/api/client/**").hasAuthority("ROLE_CLIENT")
 
-                        // Protezione rotte per HOTEL
+                        // ✅ Protezione rotte per HOTEL
                         .requestMatchers("/api/hotel/**").hasAuthority("ROLE_HOTEL")
 
-                        // Qualsiasi altra richiesta deve essere autenticata
+                        // ✅ Qualsiasi altra richiesta deve essere autenticata
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(jwtAuthenticationEntryPoint) // Gestione errori autenticazione
+                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 )
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // JWT gestisce lo stato
-                );
-
-        // Aggiunge il filtro JWT prima di UsernamePasswordAuthenticationFilter
-        http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    // ✅ Configurazione CORS globale
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowCredentials(true);
+        configuration.setAllowedOrigins(List.of("http://localhost:4200")); // 🔥 Permetti Angular
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
     @Bean
