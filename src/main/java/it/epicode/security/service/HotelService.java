@@ -53,12 +53,32 @@ public class HotelService {
         return hotelRepository.save(hotel);
     }
 
-    public Hotel updateHotel(Long id, HotelDTO hotelDTO) {
+    public Hotel updateHotel(Long id, HotelDTO hotelDTO, MultipartFile image) {
+        System.out.println("🛠️ [DEBUG] updateHotel() chiamato con ID: " + id);
+
         Hotel hotel = findById(id);
+        System.out.println("✅ [DEBUG] Hotel trovato: " + hotel.getName());
+
         hotel.setName(hotelDTO.getName());
         hotel.setLocation(hotelDTO.getLocation());
-        return hotelRepository.save(hotel);
+
+        if (image != null && !image.isEmpty()) {
+            // ✅ Salva il file e aggiorna `imageUrl`
+            String imageUrl = fileService.saveImage(image);
+            hotel.setImageUrl(imageUrl);
+            System.out.println("✅ [DEBUG] Nuova immagine salvata: " + imageUrl);
+        } else {
+            System.out.println("⚠️ [DEBUG] Nessuna nuova immagine ricevuta, manteniamo: " + hotel.getImageUrl());
+        }
+
+        Hotel updatedHotel = hotelRepository.save(hotel);
+        System.out.println("✅ [DEBUG] Hotel aggiornato e salvato nel DB: " + updatedHotel.getImageUrl());
+
+        return updatedHotel;
     }
+
+
+
 
     public void deleteHotel(Long id) {
         Hotel hotel = findById(id);

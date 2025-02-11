@@ -33,9 +33,9 @@ public class HotelController {
     @PreAuthorize("hasRole('ROLE_HOTEL')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Hotel> createHotel(
-            @RequestPart("name") String name,
-            @RequestPart("location") String location,
-            @RequestPart("ownerId") Long ownerId, // ✅ Aggiunto il proprietario
+            @RequestParam("name") String name,
+            @RequestParam("location") String location,
+            @RequestParam("ownerId") Long ownerId, // ✅ Aggiunto il proprietario
             @RequestPart(value = "image", required = false) MultipartFile image) {
 
         // Log per verificare i dati ricevuti
@@ -83,9 +83,27 @@ public class HotelController {
     }
 
     @PreAuthorize("hasRole('ROLE_HOTEL')")
-    @PutMapping("/{id}")
-    public ResponseEntity<Hotel> updateHotel(@PathVariable Long id, @RequestBody HotelDTO hotelDTO) {
-        return ResponseEntity.ok(hotelService.updateHotel(id, hotelDTO));
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Hotel> updateHotel(
+            @PathVariable Long id,
+            @RequestParam("name") String name,
+            @RequestParam("location") String location,
+            @RequestPart(value = "image", required = false) MultipartFile image) {
+
+        System.out.println("🛠️ Aggiornamento hotel ID: " + id);
+        System.out.println("📌 Nome: " + name);
+        System.out.println("📌 Location: " + location);
+
+        if (image != null) {
+            System.out.println("📸 Nuova immagine ricevuta: " + image.getOriginalFilename());
+        }
+
+        HotelDTO hotelDTO = new HotelDTO();
+        hotelDTO.setName(name);
+        hotelDTO.setLocation(location);
+
+        Hotel updatedHotel = hotelService.updateHotel(id, hotelDTO, image);
+        return ResponseEntity.ok(updatedHotel);
     }
 
     @PreAuthorize("hasRole('ROLE_HOTEL')")
