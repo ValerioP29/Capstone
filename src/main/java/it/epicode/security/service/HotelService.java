@@ -58,6 +58,7 @@ public class HotelService {
 
         Hotel hotel = findById(id);
         System.out.println("✅ [DEBUG] Hotel trovato: " + hotel.getName());
+        System.out.println("🔄 [DEBUG] Valori attuali - Name: " + hotel.getName() + ", Location: " + hotel.getLocation() + ", ImageURL: " + hotel.getImageUrl());
 
         hotel.setName(hotelDTO.getName());
         hotel.setLocation(hotelDTO.getLocation());
@@ -71,11 +72,15 @@ public class HotelService {
             System.out.println("⚠️ [DEBUG] Nessuna nuova immagine ricevuta, manteniamo: " + hotel.getImageUrl());
         }
 
+        System.out.println("🛠️ [DEBUG] Salvando hotel nel database con ImageURL: " + hotel.getImageUrl());
         Hotel updatedHotel = hotelRepository.save(hotel);
+        System.out.println("✅ [DEBUG] Hotel salvato con successo. ImageURL dopo il salvataggio: " + updatedHotel.getImageUrl());
+
         System.out.println("✅ [DEBUG] Hotel aggiornato e salvato nel DB: " + updatedHotel.getImageUrl());
 
         return updatedHotel;
     }
+
 
 
 

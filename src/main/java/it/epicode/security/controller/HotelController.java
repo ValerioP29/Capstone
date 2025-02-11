@@ -116,10 +116,9 @@ public class HotelController {
     @PreAuthorize("hasRole('ROLE_HOTEL')")
     @GetMapping("/my-hotel")
     public ResponseEntity<List<Hotel>> getMyHotels(@RequestHeader("Authorization") String token) {
-        // ✅ Rimuove "Bearer " dalla stringa del token
         token = token.replace("Bearer ", "").trim();
-
         String username = jwtTokenUtil.getUsernameFromToken(token);
+
         if (username == null || username.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.emptyList());
         }
@@ -132,14 +131,13 @@ public class HotelController {
         List<Hotel> hotels = hotelService.findHotelsByOwner(owner.getId());
 
         hotels.forEach(hotel -> {
-            if (hotel.getImageUrl() != null && !hotel.getImageUrl().isEmpty()) {
+            if (hotel.getImageUrl() != null && !hotel.getImageUrl().startsWith("http")) {
                 hotel.setImageUrl("http://localhost:8080/uploads/" + hotel.getImageUrl());
-            } else {
-                hotel.setImageUrl("http://localhost:8080/uploads/default-hotel.jpg");
             }
         });
 
         return ResponseEntity.ok(hotels);
     }
+
 
 }
