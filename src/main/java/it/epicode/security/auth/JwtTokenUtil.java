@@ -3,11 +3,13 @@ package it.epicode.security.auth;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -29,10 +31,9 @@ public class JwtTokenUtil {
             return getClaimFromToken(token, Claims::getSubject);
         } catch (Exception e) {
             System.err.println("⚠️ Errore nel parsing del token JWT: " + e.getMessage());
-            return null; // Evita di lanciare un'eccezione non gestita
+            return null;
         }
     }
-
 
     // Estrae la data di scadenza dal token JWT
     public Date getExpirationDateFromToken(String token) {
@@ -59,29 +60,41 @@ public class JwtTokenUtil {
         return expiration.before(new Date());
     }
 
-    // Genera un token JWT per l'utente, includendo i ruoli
+    // Genera un token JWT per l'utente, includendo i ruoli e hotelId se applicabile
     public String generateToken(UserDetails userDetails) {
         Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
         List<String> roles = authorities.stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
 
-        // stiamo usando CustomUserDetails per ottenere l'ID
         Long userId = null;
+        Long hotelId = null;
+
         if (userDetails instanceof CustomUserDetails) {
-            userId = ((CustomUserDetails) userDetails).getId();
+            CustomUserDetails customUser = (CustomUserDetails) userDetails;
+            userId = customUser.getId();
+
+            // ✅ Se l'utente è un hotel owner, aggiungiamo `hotelId`
+            if (roles.contains("ROLE_HOTEL") && customUser.getHotelId() != null) {
+                hotelId = customUser.getHotelId();
+            }
         }
 
-        return Jwts.builder()
+        String token = Jwts.builder()
                 .setSubject(userDetails.getUsername())
-                .claim("id", userId)  // ✅ Aggiunto ID nel token
-                .claim("roles", roles) // ✅ Manteniamo anche i ruoli
+                .claim("id", userId)
+                .claim("hotelId", hotelId) // ✅ Aggiunto `hotelId` nel token
+                .claim("roles", roles)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationInMs))
-                .signWith(SignatureAlgorithm.HS256, secret)
-                .compact();
-    }
+                .signWith(Keys.hmacShaKeyFor(Base64.getDecoder().decode(secret)), SignatureAlgorithm.HS512)
 
+
+                .compact();
+        System.out.println(token);
+        return token;
+
+    }
 
     // Estrae i ruoli dal token JWT
     public List<String> getRolesFromToken(String token) {

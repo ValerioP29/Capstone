@@ -37,6 +37,9 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest) {
         try {
+            System.out.println("📩 Richiesta di login ricevuta per username: " + loginRequest.getUsername());
+            System.out.println("🔑 Password inserita: " + loginRequest.getPassword());
+
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginRequest.getUsername(),
@@ -50,9 +53,14 @@ public class AuthController {
             // Generare Token JWT
             String token = jwtTokenUtil.generateToken(userDetails);
 
+            // ✅ DEBUG: Stampa il token nel terminale di IntelliJ
+            System.out.println("🔑 Token generato per " + userDetails.getUsername() + ": " + token);
+
             return ResponseEntity.ok(new AuthResponse(token));
 
         } catch (Exception e) {
+            System.out.println("❌ ERRORE LOGIN: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthResponse("Invalid credentials"));
         }
     }

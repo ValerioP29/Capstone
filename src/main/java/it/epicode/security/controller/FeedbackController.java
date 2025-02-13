@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/feedbacks")
+@RequestMapping("/api/feedback")
 public class FeedbackController {
 
     @Autowired
@@ -24,6 +24,18 @@ public class FeedbackController {
     @PreAuthorize("hasRole('ROLE_HOTEL')")
     @PostMapping
     public ResponseEntity<Feedback> createFeedback(@RequestBody FeedbackDTO feedbackDTO) {
+        System.out.println("📝 Feedback ricevuto: " + feedbackDTO.toString()); // ✅ Debug
+
+        if (feedbackDTO.getHotelId() == null || feedbackDTO.getHotelId() == 0) {
+            System.out.println("❌ ERRORE: HotelId mancante!");
+            return ResponseEntity.badRequest().body(null);
+        }
+
+        if (feedbackDTO.getClientId() == null || feedbackDTO.getClientId() == 0) {
+            System.out.println("❌ ERRORE: ClientId mancante!");
+            return ResponseEntity.badRequest().body(null);
+        }
+
         Feedback createdFeedback = feedbackService.createFeedback(feedbackDTO);
 
         // ✅ Aggiorniamo il punteggio dell'utente automaticamente dopo la creazione del feedback
@@ -31,6 +43,7 @@ public class FeedbackController {
 
         return ResponseEntity.ok(createdFeedback);
     }
+
 
     @PreAuthorize("hasRole('ROLE_CLIENT') and #clientId == authentication.principal.id")
     @GetMapping("/client/{clientId}")

@@ -1,5 +1,6 @@
 package it.epicode.security.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -32,7 +33,8 @@ public class Hotel {
     private String imageUrl;
 
     @ManyToOne
-    @JoinColumn(nullable = false, name = "owner_id", referencedColumnName = "id")
+    @JoinColumn(name = "owner_id", nullable = false)
+    @JsonBackReference
     private User owner; // Proprietario dell'hotel (collegato a User con ROLE_HOTEL)
 
     @Column(nullable = false, updatable = false)

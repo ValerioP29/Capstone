@@ -34,14 +34,19 @@ public class User {
     private Set<Role> roles;
 
 
+    @Getter
     @OneToOne(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private Score score;
 
-    public Score getScore() {
-        return this.score;
-    }
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private Set<Hotel> hotels;
 
+    // Metodo per ottenere il primo hotel associato all'utente
+    public Hotel getHotel() {
+        return hotels != null && !hotels.isEmpty() ? hotels.iterator().next() : null;
+    }
     public void setScore(Score score) {
         this.score = score;
         score.setClient(this);
