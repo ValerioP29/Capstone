@@ -10,7 +10,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class HotelService {
@@ -53,35 +59,24 @@ public class HotelService {
         return hotelRepository.save(hotel);
     }
 
-    public Hotel updateHotel(Long id, HotelDTO hotelDTO, MultipartFile image) {
-        System.out.println("🛠️ [DEBUG] updateHotel() chiamato con ID: " + id);
-
-        Hotel hotel = findById(id);
-        System.out.println("✅ [DEBUG] Hotel trovato: " + hotel.getName());
-        System.out.println("🔄 [DEBUG] Valori attuali - Name: " + hotel.getName() + ", Location: " + hotel.getLocation() + ", ImageURL: " + hotel.getImageUrl());
+    public Hotel updateHotel(Long id, HotelDTO hotelDTO, MultipartFile imageFile) throws IOException {
+        Hotel hotel = findById(id); // Trova l'hotel nel DB
 
         hotel.setName(hotelDTO.getName());
         hotel.setLocation(hotelDTO.getLocation());
 
-        if (image != null && !image.isEmpty()) {
-            // ✅ Salva il file e aggiorna `imageUrl`
-            String imageUrl = fileService.saveImage(image);
-            hotel.setImageUrl(imageUrl);
-            System.out.println("✅ [DEBUG] Nuova immagine salvata: " + imageUrl);
-        } else {
-            System.out.println("⚠️ [DEBUG] Nessuna nuova immagine ricevuta, manteniamo: " + hotel.getImageUrl());
+        if (imageFile != null && !imageFile.isEmpty()) {
+            // Salviamo il file nella cartella uploads
+            String filename = UUID.randomUUID() + "_" + imageFile.getOriginalFilename();
+            Path filePath = Paths.get("uploads").resolve(filename);
+            Files.copy(imageFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            // ✅ Salviamo il percorso RELATIVO nel database
+            hotel.setImageUrl( filename);
         }
 
-        System.out.println("🛠️ [DEBUG] Salvando hotel nel database con ImageURL: " + hotel.getImageUrl());
-        Hotel updatedHotel = hotelRepository.save(hotel);
-        System.out.println("✅ [DEBUG] Hotel salvato con successo. ImageURL dopo il salvataggio: " + updatedHotel.getImageUrl());
-
-        System.out.println("✅ [DEBUG] Hotel aggiornato e salvato nel DB: " + updatedHotel.getImageUrl());
-
-        return updatedHotel;
+        return hotelRepository.save(hotel);
     }
-
-
 
 
 

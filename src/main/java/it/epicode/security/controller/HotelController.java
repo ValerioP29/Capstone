@@ -14,6 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -81,14 +82,13 @@ public class HotelController {
     public ResponseEntity<List<Hotel>> getAllHotels() {
         return ResponseEntity.ok(hotelService.findAll());
     }
-
     @PreAuthorize("hasRole('ROLE_HOTEL')")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Hotel> updateHotel(
             @PathVariable Long id,
             @RequestParam("name") String name,
             @RequestParam("location") String location,
-            @RequestPart(value = "image", required = false) MultipartFile image) {
+            @RequestPart(value = "image", required = false) MultipartFile image) throws IOException { // ✅ Aggiunto throws IOException
 
         System.out.println("🛠️ Aggiornamento hotel ID: " + id);
         System.out.println("📌 Nome: " + name);
