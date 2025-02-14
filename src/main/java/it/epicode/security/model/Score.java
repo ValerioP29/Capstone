@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+
+
 @Entity
 @Getter
 @Setter
@@ -22,5 +24,6 @@ public class Score {
     private User client;
     private int totalScore;
     private String tier;
+
 
 }

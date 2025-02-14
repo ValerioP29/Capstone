@@ -53,9 +53,12 @@ public class FeedbackController {
     }
 
     @PreAuthorize("hasRole('ROLE_HOTEL')")
-    @GetMapping("/hotel/{hotelId}")
+    @GetMapping("/hotel/{ownerId}")
     public ResponseEntity<List<Feedback>> getFeedbackByHotel(@PathVariable Long ownerId) {
+        System.out.println("📌 DEBUG: GET feedback per ownerId -> " + ownerId);
         List<Feedback> feedbacks = feedbackService.getFeedbackByHotelOwner(ownerId);
+        System.out.println("✅ Feedback trovati: " + feedbacks.size());
+
         return ResponseEntity.ok(feedbacks);
     }
 }

@@ -11,6 +11,7 @@ import it.epicode.security.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -40,6 +41,9 @@ public class FeedbackService {
         feedback.setRespectedCheckInOut(feedbackDTO.isRespectedCheckInOut());
         feedback.setComments(feedbackDTO.getComments());
 
+        if (feedback.getCreatedAt() == null) {
+            feedback.setCreatedAt(LocalDateTime.now());
+        }
         return feedbackRepository.save(feedback);
 
     }

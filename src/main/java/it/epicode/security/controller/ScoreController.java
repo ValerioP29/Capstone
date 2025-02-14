@@ -7,11 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/scores")
+@RequestMapping("/api/score")
 public class ScoreController {
 
     @Autowired
@@ -44,4 +43,12 @@ public class ScoreController {
         scoreService.deleteScore(clientId);
         return ResponseEntity.noContent().build();
     }
+    @PreAuthorize("hasRole('ROLE_HOTEL')")
+    @GetMapping("/hotel/{hotelId}")
+    public ResponseEntity<List<ScoreDTO>> getScoresByHotel(
+            @PathVariable Long hotelId) {
+        List<ScoreDTO> scores = scoreService.getScoresByHotel(hotelId);
+        return ResponseEntity.ok(scores);
+    }
+
 }

@@ -11,6 +11,7 @@ import it.epicode.security.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+
 import java.util.List;
 
 @Service
@@ -36,7 +37,7 @@ public class ScoreService {
 
     public Score createScore(ScoreDTO scoreDTO) {
         User client = userRepository.findById(scoreDTO.getClientId())
-                .orElseThrow(()-> new ResourceNotFoundException("User not found with ID: " + scoreDTO.getClientId() ));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + scoreDTO.getClientId()));
 
 
         Score score = new Score();
@@ -63,6 +64,7 @@ public class ScoreService {
         scoreRepository.delete(score);
 
     }
+
     public Score updateScoreForClient(Long clientId) {
         List<Feedback> feedbacks = feedbackRepository.findByClientId(clientId);
 
@@ -98,6 +100,16 @@ public class ScoreService {
         if (totalScore >= 50) return "GOLD";
         if (totalScore >= 30) return "SILVER";
         return "BRONZE";
+    }
+
+    public List<ScoreDTO> getScoresByHotel(Long hotelId) {
+
+
+        List<ScoreDTO> scores = scoreRepository.findScoresByHotelId(hotelId);
+
+        System.out.println("📊 Risultati trovati dalla query: " + scores.size());
+
+        return scores;
     }
 
 
