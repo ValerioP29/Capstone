@@ -85,7 +85,7 @@ public class HotelService {
         hotelRepository.delete(hotel);
     }
 
-    public List<Hotel> findHotelsByOwner(Long ownerId) {
+    public List<Hotel> findHotelsByOwnerId(Long ownerId) {
         if (ownerId == null) {
             throw new IllegalArgumentException("L'ID del proprietario non può essere nullo");
         }

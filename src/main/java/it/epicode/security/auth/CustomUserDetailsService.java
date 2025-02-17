@@ -2,6 +2,7 @@ package it.epicode.security.auth;
 
 import it.epicode.security.model.Hotel;
 import it.epicode.security.model.User;
+import it.epicode.security.repository.HotelRepository;
 import it.epicode.security.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -10,13 +11,16 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.stream.Collectors;
-
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private HotelRepository hotelRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -29,9 +33,9 @@ public class CustomUserDetailsService implements UserDetailsService {
         // ✅ Recuperiamo l'hotelId solo se l'utente ha il ruolo ROLE_HOTEL
         Long hotelId = null;
         if (user.getRoles().stream().anyMatch(role -> role.name().equals("ROLE_HOTEL"))) {
-            Hotel hotel = userRepository.findHotelByOwnerId(user.getId());
-            if (hotel != null) {
-                hotelId = hotel.getId();
+            List<Hotel> hotels = hotelRepository.findByOwnerId(user.getId()); // 🔍 Ottieni tutti gli hotel dell'utente
+            if (!hotels.isEmpty()) {
+                hotelId = hotels.get(0).getId(); // 🔥 Prendiamo il primo hotel se esiste
             }
         }
 
@@ -45,6 +49,4 @@ public class CustomUserDetailsService implements UserDetailsService {
                 hotelId // ✅ Aggiunto `hotelId`
         );
     }
-
 }
-

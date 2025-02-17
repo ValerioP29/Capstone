@@ -16,8 +16,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u JOIN u.score s ORDER BY s.totalScore DESC")
     List<User> findTopUsers();
 
-    @Query("SELECT h FROM Hotel h WHERE h.owner.id = :ownerId")
-    Hotel findHotelByOwnerId(@Param("ownerId") Long ownerId);
+
 
 
     // ✅ Aggiunti metodi mancanti per verificare l'esistenza di username ed email

@@ -2,6 +2,7 @@ package it.epicode.security.controller;
 
 import it.epicode.security.auth.JwtTokenUtil;
 import it.epicode.security.dto.HotelDTO;
+import it.epicode.security.exceptions.ResourceNotFoundException;
 import it.epicode.security.model.Hotel;
 import it.epicode.security.model.User;
 import it.epicode.security.repository.UserRepository;
@@ -36,14 +37,17 @@ public class HotelController {
     public ResponseEntity<Hotel> createHotel(
             @RequestParam("name") String name,
             @RequestParam("location") String location,
-            @RequestParam("ownerId") Long ownerId, // ✅ Aggiunto il proprietario
+            @RequestHeader ("Authorization") String token,
             @RequestPart(value = "image", required = false) MultipartFile image) {
+
+        token = token.replace("Bearer ", "").trim();
+        Long ownerId = jwtTokenUtil.getUserIdFromToken(token);
 
         // Log per verificare i dati ricevuti
         System.out.println("📥 Ricevuta richiesta per creare un hotel");
         System.out.println("Nome: " + name);
         System.out.println("Posizione: " + location);
-        System.out.println("Proprietario ID: " + ownerId);
+
 
         if (image != null) {
             System.out.println("📸 Immagine ricevuta: " + image.getOriginalFilename());
@@ -53,10 +57,16 @@ public class HotelController {
             System.out.println("❌ Nessuna immagine caricata.");
         }
 
+        User owner = userRepository.findById(ownerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Owner not found for ID: " + ownerId));
+
+        System.out.println("📥 Creazione hotel richiesta da: " + owner.getUsername() + " (ID: " + owner.getId() + ")");
+
+
         HotelDTO hotelDTO = new HotelDTO();
         hotelDTO.setName(name);
         hotelDTO.setLocation(location);
-        hotelDTO.setOwnerId(ownerId);
+        hotelDTO.setOwnerId(owner.getId());
 
         try {
             // ✅ Passa l'immagine al service
@@ -128,7 +138,7 @@ public class HotelController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyList());
         }
 
-        List<Hotel> hotels = hotelService.findHotelsByOwner(owner.getId());
+        List<Hotel> hotels = hotelService.findHotelsByOwnerId(owner.getId());
 
         hotels.forEach(hotel -> {
             if (hotel.getImageUrl() != null && !hotel.getImageUrl().startsWith("http")) {
