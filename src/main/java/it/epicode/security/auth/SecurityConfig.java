@@ -52,6 +52,8 @@ public class SecurityConfig {
 
                         // ✅ Protezione per CLIENT
                         .requestMatchers("/api/client/**").hasAuthority("ROLE_CLIENT")
+                        .requestMatchers("/api/score").hasAuthority("ROLE_CLIENT")
+                        .requestMatchers("/api/feedback").hasAuthority("ROLE_CLIENT")
 
                         // ✅ Qualsiasi altra richiesta deve essere autenticata
                         .anyRequest().authenticated()
