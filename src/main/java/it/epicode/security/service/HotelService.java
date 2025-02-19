@@ -46,6 +46,7 @@ public class HotelService {
         Hotel hotel = new Hotel();
         hotel.setName(hotelDTO.getName());
         hotel.setLocation(hotelDTO.getLocation());
+        hotel.setStars(hotelDTO.getStars());
         hotel.setOwner(owner);
 
         // ✅ Salvataggio immagine

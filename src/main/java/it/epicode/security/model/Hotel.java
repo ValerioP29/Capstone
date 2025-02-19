@@ -32,6 +32,9 @@ public class Hotel {
 
     private String imageUrl;
 
+    @Column
+    private int stars;
+
     @ManyToOne
     @JoinColumn(name = "owner_id", nullable = false)
     @JsonBackReference
