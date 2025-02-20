@@ -82,7 +82,7 @@ public class DataInitializr implements CommandLineRunner {
                     hotel.setName("Hotel " + ((i - 1) * 3 + j)); // Nome unico per ogni hotel
                     hotel.setOwner(owner);
                     hotel.setLocation("Location " + ((i - 1) * 3 + j));
-                    hotel.setImageUrl("image" + ((i - 1) * 3 + j) + ".jpg");
+                    hotel.setImageUrl("default-hotel-image.jpg");
                     hotelRepository.save(hotel);
                 }
             }
