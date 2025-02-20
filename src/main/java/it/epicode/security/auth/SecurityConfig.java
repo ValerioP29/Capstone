@@ -49,14 +49,19 @@ public class SecurityConfig {
                         // ✅ Protezione completa per HOTEL
                         .requestMatchers(HttpMethod.POST, "/api/hotels").hasAuthority("ROLE_HOTEL")
                         .requestMatchers("/api/hotels/**").hasAuthority("ROLE_HOTEL")
-                        .requestMatchers("/api/feedback/**").hasAuthority("ROLE_HOTEL")
+                        .requestMatchers("/api/feedback").hasAuthority("ROLE_HOTEL")
+                        .requestMatchers("/api/feedback/hotel/{ownerId}").hasAuthority("ROLE_HOTEL")
+
+
+
 
 
                         // ✅ Protezione per CLIENT
                         .requestMatchers("/api/client/**").hasAuthority("ROLE_CLIENT")
                         .requestMatchers("/api/score").hasAuthority("ROLE_CLIENT")
-                        .requestMatchers("/api/feedback/**").hasAuthority("ROLE_CLIENT")
-
+                        .requestMatchers("/api/feedback/client/{clientId}").hasAuthority("ROLE_CLIENT")
+                        .requestMatchers("/api/reward-claim/**").hasAuthority("ROLE_CLIENT")
+                        .requestMatchers("/api/users/**").hasAuthority("ROLE_CLIENT")
                         // ✅ Qualsiasi altra richiesta deve essere autenticata
                         .anyRequest().authenticated()
                 )

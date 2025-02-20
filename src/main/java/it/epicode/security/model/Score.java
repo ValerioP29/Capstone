@@ -25,5 +25,9 @@ public class Score {
     private int totalScore;
     private String tier;
 
+    public Score(int totalScore, String tier) {
+        this.totalScore = totalScore;
+        this.tier = tier;
+    }
 
 }

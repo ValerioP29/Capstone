@@ -1,8 +1,10 @@
 package it.epicode.security.service;
 
 import it.epicode.security.auth.Role;
+import it.epicode.security.dto.PasswordUpdateRequest;
 import it.epicode.security.dto.RegisterRequestDTO;
 import it.epicode.security.dto.UserDTO;
+import it.epicode.security.model.Score;
 import it.epicode.security.model.User;
 import it.epicode.security.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -52,11 +54,43 @@ public class UserService {
         userRepository.save(user);
     }
 
-    // ✅ TROVA UTENTE PER ID
     public User findById(Long id) {
         return userRepository.findById(id)
+                .map(user -> {
+                    if (user.getScore() == null) {
+                        user.setScore(new Score(0, "BRONZE")); // Default se non ha punteggio
+                    }
+                    return user;
+                })
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
+
+    // ✅ AGGIORNA UTENTE (ora permette di aggiornare username e password)
+    public User updateUser(Long id, UserDTO userDTO) {
+        User existingUser = findById(id);
+
+        existingUser.setUsername(userDTO.getUsername());
+        existingUser.setEmail(userDTO.getEmail()); // Se decidi di mantenere anche l'email modificabile
+
+        userRepository.save(existingUser);
+        return existingUser;
+    }
+
+    // ✅ MODIFICA PASSWORD UTENTE (richiede la password attuale per sicurezza)
+    public boolean updateUserPassword(Long id, PasswordUpdateRequest request) {
+        User existingUser = findById(id);
+
+        // Controllo se la password attuale è corretta
+        if (!passwordEncoder.matches(request.getOldPassword(), existingUser.getPassword())) {
+            return false; // Password errata
+        }
+
+        // Aggiorna la password
+        existingUser.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(existingUser);
+        return true;
+    }
+
 
     // ✅ TROVA TUTTI GLI UTENTI
     public List<User> findAll() {
@@ -68,20 +102,11 @@ public class UserService {
         return userRepository.findTopUsers();
     }
 
-    // ✅ AGGIORNA UTENTE (solo se è lo stesso utente autenticato)
-    public User updateUser(Long id, UserDTO userDTO) {
-        User existingUser = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        existingUser.setUsername(userDTO.getUsername());
-        existingUser.setEmail(userDTO.getEmail());
 
-        userRepository.save(existingUser);
-        return existingUser;
-    }
     public User findByUsername(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
-
 }
+
