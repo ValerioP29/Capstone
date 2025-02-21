@@ -118,16 +118,16 @@ public class DataInitializr implements CommandLineRunner {
         }
 
         // Creazione premi di default
-        rewardRepository.save(new Reward(null, "Soggiorno gratuito", "Una notte gratis in un hotel a scelta", 500));
-        rewardRepository.save(new Reward(null, "Colazione gratuita", "Colazione gratuita in hotel", 200));
-        rewardRepository.save(new Reward(null, "Upgrade camera", "Passaggio gratuito a una camera superiore", 300));
-        rewardRepository.save(new Reward(null, "Sconto 10%", "10% di sconto sulla prenotazione", 100));
-        rewardRepository.save(new Reward(null, "Late Checkout", "Check-out posticipato fino alle 15:00", 150));
-        rewardRepository.save(new Reward(null, "Cena per due", "Cena romantica gratuita in hotel", 400));
-        rewardRepository.save(new Reward(null, "Massaggio SPA", "Massaggio gratuito di 30 minuti", 350));
-        rewardRepository.save(new Reward(null, "Parcheggio gratuito", "Parcheggio gratuito per tutta la durata del soggiorno", 180));
-        rewardRepository.save(new Reward(null, "WiFi premium", "WiFi ad alta velocità gratuito", 120));
-        rewardRepository.save(new Reward(null, "Bevanda di benvenuto", "Cocktail o bevanda di benvenuto gratuita", 50));
+        rewardRepository.save(new Reward(null, "Soggiorno gratuito", "Una notte gratis in un hotel a scelta", 100));
+        rewardRepository.save(new Reward(null, "Colazione gratuita", "Colazione gratuita in hotel", 20));
+        rewardRepository.save(new Reward(null, "Upgrade camera", "Passaggio gratuito a una camera superiore", 30));
+        rewardRepository.save(new Reward(null, "Sconto 10%", "10% di sconto sulla prenotazione", 20));
+        rewardRepository.save(new Reward(null, "Late Checkout", "Check-out posticipato fino alle 15:00", 15));
+        rewardRepository.save(new Reward(null, "Cena per due", "Cena romantica gratuita in hotel a scelta", 40));
+        rewardRepository.save(new Reward(null, "Massaggio SPA", "Massaggio gratuito di 30 minuti", 35));
+        rewardRepository.save(new Reward(null, "Parcheggio gratuito", "Parcheggio gratuito per tutto il soggiorno", 18));
+        rewardRepository.save(new Reward(null, "WiFi premium", "WiFi ad alta velocità gratuito", 20));
+        rewardRepository.save(new Reward(null, "Bevanda di benvenuto", "Cocktail o bevanda di benvenuto gratuita", 10));
     }
 
     private String generateRealisticComment() {
