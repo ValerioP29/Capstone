@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Component
@@ -35,8 +36,8 @@ public class DataInitializr implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // Creazione utenti
-        for (int i = 1; i <= 100; i++) { // Creiamo 100 utenti clienti
+        // Creazione utenti clienti (100 utenti)
+        for (int i = 1; i <= 100; i++) {
             String username = "client" + i;
             String email = "client" + i + "@example.com";
             String password = passwordEncoder.encode("password" + i);
@@ -54,14 +55,14 @@ public class DataInitializr implements CommandLineRunner {
                 // Crea punteggio iniziale per il cliente
                 Score score = new Score();
                 score.setClient(user);
-                score.setTotalScore(0);  // Punteggio iniziale a 0
-                score.setTier("BRONZE"); // Tutti i clienti partono con il tier "BRONZE"
+                score.setTotalScore(0);
+                score.setTier("BRONZE");
                 scoreRepository.save(score);
             }
         }
 
-        // Creazione hotel e relativi proprietari (3 hotel per utente)
-        for (int i = 1; i <= 30; i++) { // Creiamo 30 proprietari di hotel
+        // Creazione hotel e relativi proprietari (30 proprietari, 3 hotel per ciascuno)
+        for (int i = 1; i <= 30; i++) {
             String username = "hotelOwner" + i;
             String email = "hotelOwner" + i + "@example.com";
             String password = passwordEncoder.encode("password" + i);
@@ -91,20 +92,19 @@ public class DataInitializr implements CommandLineRunner {
         // Creazione di 500 feedback
         for (int i = 1; i <= 500; i++) {
             Feedback feedback = new Feedback();
-            // Assegna un hotel a caso
-            Hotel hotel = hotelRepository.findById((long) ((i % 30) + 1)).orElseThrow();  // Esempio: ciclo sugli hotel
-
-            // Assegna un cliente a caso
-            User client = userRepository.findById((long) ((i % 100) + 1)).orElseThrow();  // Esempio: ciclo sui clienti
+            // Assegna un hotel a caso (ciclico, da 1 a 30)
+            Hotel hotel = hotelRepository.findById((long) ((i % 30) + 1)).orElseThrow();
+            // Assegna un cliente a caso (ciclico, da 1 a 100)
+            User client = userRepository.findById((long) ((i % 100) + 1)).orElseThrow();
             feedback.setHotel(hotel);
             feedback.setClient(client);
 
-            feedback.setCleanlinessScore(1 + (int) (Math.random() * 5)); // Punteggio random tra 1 e 5
+            feedback.setCleanlinessScore(1 + (int) (Math.random() * 5));
             feedback.setRuleComplianceScore(1 + (int) (Math.random() * 5));
             feedback.setBehaviorScore(1 + (int) (Math.random() * 5));
-            feedback.setRespectedCheckInOut(Math.random() < 0.8); // 80% probabilità che il check-in/out venga rispettato
-            feedback.setComments(generateRealisticComment());  // Commento realistico
-            feedback.setCreatedAt(LocalDateTime.now().minusDays((int) (Math.random() * 30)));  // Feedback creato negli ultimi 30 giorni
+            feedback.setRespectedCheckInOut(Math.random() < 0.8);
+            feedback.setComments(generateRealisticComment());
+            feedback.setCreatedAt(LocalDateTime.now().minusDays((int) (Math.random() * 30)));
 
             feedbackRepository.save(feedback);
 
@@ -117,7 +117,7 @@ public class DataInitializr implements CommandLineRunner {
             scoreRepository.save(score);
         }
 
-        // Creazione premi di default
+        // Creazione premi di default (10 premi)
         rewardRepository.save(new Reward(null, "Soggiorno gratuito", "Una notte gratis in un hotel a scelta", 100));
         rewardRepository.save(new Reward(null, "Colazione gratuita", "Colazione gratuita in hotel", 20));
         rewardRepository.save(new Reward(null, "Upgrade camera", "Passaggio gratuito a una camera superiore", 30));
@@ -128,6 +128,90 @@ public class DataInitializr implements CommandLineRunner {
         rewardRepository.save(new Reward(null, "Parcheggio gratuito", "Parcheggio gratuito per tutto il soggiorno", 18));
         rewardRepository.save(new Reward(null, "WiFi premium", "WiFi ad alta velocità gratuito", 20));
         rewardRepository.save(new Reward(null, "Bevanda di benvenuto", "Cocktail o bevanda di benvenuto gratuita", 10));
+
+        // --- DEMO: Cliente con nome reale ---
+        if (userRepository.findByUsername("giovanni.rossi").isEmpty()) {
+            User demoClient = new User();
+            demoClient.setUsername("giovanni.rossi");
+            demoClient.setEmail("giovanni.rossi@example.com");
+            demoClient.setPassword(passwordEncoder.encode("demo123"));
+            Set<Role> clientRoles = new HashSet<>();
+            clientRoles.add(Role.ROLE_CLIENT);
+            demoClient.setRoles(clientRoles);
+            userRepository.save(demoClient);
+
+            // Crea punteggio iniziale per il demo client
+            Score demoScore = new Score();
+            demoScore.setClient(demoClient);
+            demoScore.setTotalScore(0);
+            demoScore.setTier("BRONZE");
+            scoreRepository.save(demoScore);
+        }
+
+        // --- DEMO: Owner e 3 Hotel reali con nomi, location e immagini diverse ---
+        if (userRepository.findByUsername("alessandro.rossi").isEmpty()) {
+            // Crea owner demo
+            User demoOwner = new User();
+            demoOwner.setUsername("alessandro.rossi");
+            demoOwner.setEmail("alessandro.rossi@example.com");
+            demoOwner.setPassword(passwordEncoder.encode("demo123"));
+            Set<Role> ownerRoles = new HashSet<>();
+            ownerRoles.add(Role.ROLE_HOTEL);
+            demoOwner.setRoles(ownerRoles);
+            userRepository.save(demoOwner);
+
+            // Hotel 1
+            Hotel demoHotel1 = new Hotel();
+            demoHotel1.setName("Hotel Splendido");
+            demoHotel1.setOwner(demoOwner);
+            demoHotel1.setLocation("Roma, Via del Corso 12");
+            demoHotel1.setImageUrl("https://example.com/images/hotel_splendido.jpg");
+            hotelRepository.save(demoHotel1);
+
+            // Hotel 2
+            Hotel demoHotel2 = new Hotel();
+            demoHotel2.setName("Hotel Mediterraneo");
+            demoHotel2.setOwner(demoOwner);
+            demoHotel2.setLocation("Napoli, Via Toledo 5");
+            demoHotel2.setImageUrl("https://example.com/images/hotel_mediterraneo.jpg");
+            hotelRepository.save(demoHotel2);
+
+            // Hotel 3
+            Hotel demoHotel3 = new Hotel();
+            demoHotel3.setName("Hotel Paradiso");
+            demoHotel3.setOwner(demoOwner);
+            demoHotel3.setLocation("Firenze, Piazza della Signoria 7");
+            demoHotel3.setImageUrl("https://example.com/images/hotel_paradiso.jpg");
+            hotelRepository.save(demoHotel3);
+        }
+
+        // --- AGGIUNGI FEEDBACK DEMO per aggiornare i punteggi dei demo account ---
+// Recupera il demo client e il demo owner
+        User demoClient = userRepository.findByUsername("giovanni.rossi").orElse(null);
+        User demoOwner = userRepository.findByUsername("alessandro.rossi").orElse(null);
+        if (demoClient != null && demoOwner != null) {
+            // Recupera gli hotel del demo owner usando findByOwnerId che accetta un Long
+            List<Hotel> demoHotels = hotelRepository.findByOwnerId(demoOwner.getId());
+            // Per ogni hotel demo, crea un feedback da parte del demo client
+            for (Hotel demoHotel : demoHotels) {
+                Feedback demoFeedback = new Feedback();
+                demoFeedback.setHotel(demoHotel);
+                demoFeedback.setClient(demoClient);
+                demoFeedback.setCleanlinessScore(5);
+                demoFeedback.setRuleComplianceScore(4);
+                demoFeedback.setBehaviorScore(5);
+                demoFeedback.setRespectedCheckInOut(true);
+                demoFeedback.setComments("Esperienza eccellente!");
+                demoFeedback.setCreatedAt(LocalDateTime.now().minusDays(1));
+                feedbackRepository.save(demoFeedback);
+
+                // Aggiorna il punteggio del demo client
+                Score demoScore = scoreRepository.findByClientId(demoClient.getId()).orElseThrow();
+                demoScore.setTotalScore(demoScore.getTotalScore() + 5 + 4 + 5);
+                scoreRepository.save(demoScore);
+            }
+        }
+
     }
 
     private String generateRealisticComment() {
