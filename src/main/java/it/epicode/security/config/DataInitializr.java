@@ -78,12 +78,17 @@ public class DataInitializr implements CommandLineRunner {
                 userRepository.save(owner);
 
                 // Creazione 3 hotel per ogni proprietario
+                String[] images = {"hotel1.jpg", "hotel2.jpg", "hotel3.jpg"};
+
                 for (int j = 1; j <= 3; j++) {
                     Hotel hotel = new Hotel();
                     hotel.setName("Hotel " + ((i - 1) * 3 + j)); // Nome unico per ogni hotel
                     hotel.setOwner(owner);
                     hotel.setLocation("Location " + ((i - 1) * 3 + j));
-                    hotel.setImageUrl("default-hotel-image.jpg");
+
+                    // Assegna ciclicamente un'immagine dalla lista
+                    hotel.setImageUrl(images[j - 1]);
+
                     hotelRepository.save(hotel);
                 }
             }
